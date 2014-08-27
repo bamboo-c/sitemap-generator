@@ -2,7 +2,7 @@ var http = require('http');
 
 var server = http.createServer();
 server.on('request', doRequest);
-server.listen(1234);
+server.listen(8010);
 console.log('Server running!');
 
 // リクエストの処理
