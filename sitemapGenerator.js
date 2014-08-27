@@ -1,24 +1,36 @@
-var fs = require('fs');
+var fs   = require('fs');
+var path = require('path');
 
-
-fs.readdir( './html', function( i_error, i_files ) {
-
-	if( i_error ) {
-		throw i_error;
+// ディレクトリかチェック
+var isDir = function(filepath) {
+	if (/\/$/.test(filepath)) {
+		filepath = filepath.substr(0, filepath.lastIndexOf('/') - 1);
 	}
+	return (path.existsSync(filepath) && fs.statSync(filepath).isDirectory());
+};
 
-	var fileList = [];
 
-	i_files.filter( function( i_file ) {
-
-		return fs.statSync( i_file ).isFile().test( i_file ); //絞り込み
-		console.log(fs.statSync( i_file ).isFile().test( i_file ));
-	}).forEach( function( i_file ) {
-
-		fileList.push( i_file );
-
+var walk = function(p, callback) {
+	fs.readdir(p, function(err, files){
+	if (err) throw err;
+	var pending = files.length;
+	files.map(function(file){
+		// リスト取得
+		return path.join(p, file);
+	})
+	.filter(function(file){
+		if (fs.statSync(file).isDirectory()) {
+			walk(file, function(err, res){
+				if (err) throw err;
+			});
+		}
+		else {
+		console.log(file);
+		}
+	})
 	});
+};
 
-	console.log(fileList);
-
+walk('./html', function(err, results){
+	if (err) throw err;
 });
