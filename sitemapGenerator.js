@@ -21,7 +21,7 @@ var walk = function(p, callback){
 			return fs.statSync(file).isFile();
 		}).forEach(function (file) { //ファイル名を保存
 			var stat = fs.statSync(file);
-			results.push({file:path.basename(file), size:stat.size});
+			results.push({file:path.basename(file)});
 			if (!--pending) callback(null, results);
 		});
 
