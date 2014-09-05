@@ -1,9 +1,0 @@
-{
-	"name" : "html", "type" : "folder", "child" : [
-		{ "name" : "about", "ext" : "folder", "child" : [
-			{ "name" : "index.html", "ext" : "html" }
-		] },
-		{ "name" : "cal.jpg", "ext" : "jpg" },
-		{ "name" : "index.html", "ext" : "html" }
-	]
-}
