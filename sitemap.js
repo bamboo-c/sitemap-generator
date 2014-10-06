@@ -1,71 +1,82 @@
 'use strict';
 
-var fs   = require("fs");
-var path = require("path");
+var fs     = require("fs");
+var path   = require("path");
 
 // 引数無かったらカレントを返す
 var dir  = process.argv[2] || '.';
 
-var Walk = function ( i_p, i_cb ) {
+module.exports = {
 
-	// ファイルを格納する配列を作成
-	var results = [];
+	// initialize
+	init : function ( i_p, i_cb ) {
 
-	// ファイルを解析
-	fs.readdir( i_p, function ( i_err, i_files ) {
+		var self = this;
+		var results = [];
 
-		if ( i_err ) throw err;
+		self.read( i_p, i_cb );
 
-		// ファイル数を取得
-		var pending = i_files.length;
+	},
+	// 解析
+	read : function( i_p, i_cb ) {
 
-		// 全てのファイルを取得後にコールバックを呼ぶ
-		if ( !pending ) return i_cb( null, results );
+		console.log(i_p)
 
-		i_files.map( function ( i_file ) {
+		fs.readdir( i_p, function ( i_err, i_files ) {
 
-			return path.join( i_p, i_file );
+			if ( i_err ) throw err;
 
-		}).filter( function ( i_file ) {
+			// ファイル数を取得
+			var pending = i_files.length;
 
-			if( fs.statSync( i_file ).isDirectory() ) Walk( i_file, function( i_err, i_res ) { //ディレクトリだったら再帰
+			// 全てのファイルを取得後にコールバックを呼ぶ
+			if ( !pending ) return i_cb( null, results );
+
+			i_files.map( function ( i_file ) {
+
+				return path.join( i_p, i_file );
+
+			}).filter( function ( i_file ) {
+
+				// ディレクトリだったら再帰
+				if( fs.statSync( i_file ).isDirectory() ) self.update( i_file, function( i_err, i_res ) {
+
+					results.push({
+
+						folder : path.basename( i_file ),
+						children : i_res
+
+					}); //子ディレクトリをchildrenインデックス配下に保存
+
+					if ( !--pending ) i_cb( null, results );
+
+				});
+
+				return fs.statSync( i_file ).isFile();
+
+			}).forEach( function ( i_file ) { //ファイル名を保存
 
 				results.push({
 
-					folder : path.basename( i_file ),
-					children : i_res
+					file : path.basename( i_file )
 
-				}); //子ディレクトリをchildrenインデックス配下に保存
+				});
 
 				if ( !--pending ) i_cb( null, results );
 
 			});
 
-			return fs.statSync( i_file ).isFile();
-
-		}).forEach( function ( i_file ) { //ファイル名を保存
-
-			results.push({
-
-				file : path.basename( i_file )
-
-			});
-
-			if ( !--pending ) i_cb( null, results );
-
 		});
 
-	});
+	}
+	update : function( i_err, i_results ) {
+		if ( i_err ) throw err;
+		var data = {
+			name:'project-sitemap',
+			children:i_results
+		};
+		// 出力
+		console.log( JSON.stringify( data ) );
+	}
 
-}
-
-Walk( dir, function( i_err, i_results ) {
-
-	if ( i_err ) throw err;
-	var data = {
-		name:'project-sitemap',
-		children:i_results
-	};
-	console.log( JSON.stringify( data ) ); //一覧出力
-
-});
+};
